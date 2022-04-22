@@ -1,0 +1,28 @@
+name: Test module
+on:
+  pull_request:
+
+jobs:
+  latestDeploy:
+    runs-on: ubuntu-latest
+    name: Test Module
+    strategy:
+      matrix:
+        node_version:
+          - "16"
+          - "17"
+    steps:
+      - uses: actions/checkout@v2.4.0
+        with:
+          submodules: true
+
+      - name: Setup Node.js (Github Packages)
+        uses: actions/setup-node@v3.1.1
+        with:
+          node-version: "${{ matrix.node_version }}.x"
+
+      - name: Install node depencies
+        run: npm install -d
+
+      - name: Build typescript
+        run: npm run build

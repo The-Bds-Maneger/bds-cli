@@ -1,0 +1,31 @@
+{
+  "name": "@the-bds-maneger/bds-cli",
+  "version": "1.0.0",
+  "description": "A simple CLI to manage your server as quickly and efficiently as possible.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/The-Bds-Maneger/bds-cli.git"
+  },
+  "keywords": [
+    "bds_core",
+    "bds-core",
+    "minecraft"
+  ],
+  "author": "The Bds Maneger Project",
+  "license": "AGPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/The-Bds-Maneger/bds-cli/issues"
+  },
+  "homepage": "https://github.com/The-Bds-Maneger/bds-cli#readme",
+  "devDependencies": {
+    "@types/node": "^17.0.25",
+    "typescript": "^4.6.3"
+  },
+  "dependencies": {
+    "@the-bds-maneger/core": "^2.0.0"
+  }
+}
