@@ -1,0 +1,45 @@
+name: Publish
+on:
+  workflow_dispatch:
+    version:
+      description: "Package version"
+      required: true
+      type: "string"
+    publish_release:
+      description: "Create tag on publish package"
+      required: true
+      type: "boolean"
+      default: false
+
+
+jobs:
+  publish_package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2.4.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3.1.1
+        with:
+          node-version: "16.x"
+
+      - name: Edit version
+        shell: node {0}
+        run: |
+          const fs = require("fs");
+          const path = require("path");
+          const packagePath = path.join(process.cwd(), "package.json");
+          const package = JSON.parse(fs.readfileSync(packagePath, "utf8"));
+          package.version = "${{ github.event.inputs.version }}"
+
+      - name: Install dependecies
+        run: npm install
+
+      - name: Build (typescript)
+        run: npm run build
+
+      - name: Publish
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: "${{ secrets.NPM_ORG_TOKEN }}"
