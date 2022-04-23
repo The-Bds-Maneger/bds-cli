@@ -51,8 +51,8 @@ jobs:
     strategy:
       matrix:
         npm_registry:
-          - "Github"
-          - "NPM"
+          - "https://npm.pkg.github.com/"
+          - "https://registry.npmjs.org/"
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.0.2
@@ -61,7 +61,7 @@ jobs:
         uses: actions/setup-node@v3.1.1
         with:
           node-version: "16.x"
-          registry-url: ${{ if (eq (matrix.npm_registry) 'Github') then 'https://npm.pkg.github.com/' else 'https://registry.npmjs.org/' end }}
+          registry-url: ${{ matrix.npm_registry }}
 
       - name: Edit version
         shell: node {0}
