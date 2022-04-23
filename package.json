@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "A simple CLI to manage your server as quickly and efficiently as possible.",
   "main": "dist/index.js",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "release": "standard-version",
