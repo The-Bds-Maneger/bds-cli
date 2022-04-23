@@ -5,12 +5,14 @@ on:
 jobs:
   latestDeploy:
     runs-on: ubuntu-latest
-    name: Test Module
+    name: "Test (node: ${{ matrix.node_version }})"
     strategy:
       matrix:
         node_version:
           - "16"
           - "17"
+          - "18"
+
     steps:
       - uses: actions/checkout@v2.4.0
         with:
@@ -20,9 +22,10 @@ jobs:
         uses: actions/setup-node@v3.1.1
         with:
           node-version: "${{ matrix.node_version }}.x"
+          cache: "npm"
 
       - name: Install node depencies
-        run: npm install -d
+        run: npm install
 
-      - name: Build typescript
+      - name: Build (typescript)
         run: npm run build
