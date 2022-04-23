@@ -20,12 +20,12 @@ on:
 jobs:
   publish_package:
     runs-on: ubuntu-latest
-    name: Publish Package (${{ matrix.npm_registry }})
+    name: Publish Package (${{ matrix.npm_registry == 'NPM' && 'https://registry.npmjs.org/'|| 'https://npm.pkg.github.com/' }})
     strategy:
       matrix:
         npm_registry:
-          - "https://npm.pkg.github.com/"
-          - "https://registry.npmjs.org/"
+          - "Github"
+          - "NPM"
     steps:
       - name: Checkout code
         uses: actions/checkout@v3.0.2
@@ -34,7 +34,7 @@ jobs:
         uses: actions/setup-node@v3.1.1
         with:
           node-version: "16.x"
-          registry-url: ${{ matrix.npm_registry }}
+          registry-url: ${{ matrix.npm_registry == 'NPM' && 'https://registry.npmjs.org/'|| 'https://npm.pkg.github.com/' }}
 
       - name: Update package.json
         shell: node {0}
@@ -55,7 +55,7 @@ jobs:
       - name: Publish
         run: npm publish --tag "${{ github.event.inputs.package_tag }}"
         env:
-          NODE_AUTH_TOKEN: ${{ contains('github', matrix.npm_registry) && secrets.GITHUB_TOKEN || secrets.NPM_ORG_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ matrix.npm_registry == 'NPM' && secrets.NPM_ORG_TOKEN || secrets.GITHUB_TOKEN }}
 
   createRelease:
     if: ${{ github.event.inputs.publish_release }}
