@@ -1,19 +1,26 @@
 name: Publish
 on:
   workflow_dispatch:
-    version:
-      description: "Package version"
-      required: true
-      type: "string"
-    publish_release:
-      description: "Create tag on publish package"
-      required: true
-      type: "boolean"
-      default: false
-
+    inputs:  
+      version:
+        description: "Package version, dont includes 'v' or any other label"
+        required: true
+        type: "string"
+      package_tag:
+        description: "Package tag"
+        required: true
+        type: "string"
+        default: "latest"
+      publish_release:
+        description: "Create tag on publish package"
+        required: false
+        default: true
+        type: "boolean"
 
 jobs:
-  publish_package:
+  createRelease:
+    if: ${{ github.event.inputs.publish_release }}
+    name: Create release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -24,6 +31,38 @@ jobs:
         with:
           node-version: "16.x"
 
+      - name: Install dependencies
+        run: npm install -no-save
+
+      - name: Release
+        run: npm run release -- --version ${{ github.event.inputs.version }}
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          name: v${{ github.event.inputs.version }}
+
+  publish_package:
+    runs-on: ubuntu-latest
+    name: Publish Package (${{ matrix.npm_registry }})
+    strategy:
+      matrix:
+        npm_registry:
+          - "Github"
+          - "NPM"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2.4.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3.1.1
+        with:
+          node-version: "16.x"
+          registry-url: ${{ if (eq (matrix.npm_registry) 'Github') then 'https://npm.pkg.github.com/' else 'https://registry.npmjs.org/' end }}
+
       - name: Edit version
         shell: node {0}
         run: |
@@ -32,6 +71,7 @@ jobs:
           const packagePath = path.join(process.cwd(), "package.json");
           const package = JSON.parse(fs.readfileSync(packagePath, "utf8"));
           package.version = "${{ github.event.inputs.version }}"
+          fs.writeFileSync(packagePath, JSON.stringify(package, null, 2));
 
       - name: Install dependecies
         run: npm install
@@ -40,6 +80,12 @@ jobs:
         run: npm run build
 
       - name: Publish
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: "${{ secrets.NPM_ORG_TOKEN }}"
+        run: |
+          if [[ "${{ matrix.npm_registry }}" == "Github" ]];then
+            echo "Publish to Github Packages"
+            export NODE_AUTH_TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          else
+            echo "Publish to NPM Registry"
+            export NODE_AUTH_TOKEN="${{ secrets.NPM_ORG_TOKEN }}"
+          fi
+          npm publish --tag "${{ github.event.inputs.package_tag }}"
