@@ -1,4 +1,4 @@
-name: Publish (${{ github.event.inputs.version }})
+name: Publish
 on:
   workflow_dispatch:
     inputs:  
