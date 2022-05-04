@@ -1,7 +1,8 @@
 import { Argv as yargsArgv } from "yargs";
-import * as BdsCore from "@the-bds-maneger/core";
+import BdsCore from "@the-bds-maneger/core";
 import * as serverVersions from "@the-bds-maneger/server_versions";
 import cli_color from "cli-color";
+import { Platform } from "@the-bds-maneger/core/dist/dts/globalType";
 
 export default async function downloadManeger(yargs: yargsArgv): Promise<void> {
   const options = yargs.option("platform", {
@@ -23,15 +24,14 @@ export default async function downloadManeger(yargs: yargsArgv): Promise<void> {
     type: "boolean",
     default: false
   }).parseSync();
-  const Platform = options.platform as BdsCore.bdsTypes.Platform;
+  const Platform = options.platform as Platform;
   if (options.listVersions) {
     console.log("Loading available versions...");
     const versions = await serverVersions.getAllVersions(Platform);
     let toOut = "";
-    for (const {version, datePublish, isLatest} of versions) {
-      toOut += "\n";
-      if (isLatest) toOut += cli_color.blueBright("Latest - ");
-      toOut += `${cli_color.redBright(version)}: Release date: ${datePublish.getDate()}/${datePublish.getMonth()+1}/${datePublish.getFullYear()}`;
+    for (const {version, datePublish} of versions) {
+      // @ts-ignore
+      toOut += `\n${cli_color.redBright(version)}: Release date: ${datePublish.getDate()}/${datePublish.getMonth()+1}/${datePublish.getFullYear()}`;
     }
     console.log(toOut);
   } else {

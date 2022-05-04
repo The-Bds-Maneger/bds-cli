@@ -1,7 +1,7 @@
 import path from "path";
 import { promises as fsPromise } from "fs";
 import { Argv as yargsArgv } from "yargs";
-import * as BdsCore from "@the-bds-maneger/core";
+import BdsCore from "@the-bds-maneger/core";
 
 export default async function createBackup(yargs: yargsArgv): Promise<void> {
   const options = yargs.option("zip", {

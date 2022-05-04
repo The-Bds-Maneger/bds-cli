@@ -1,8 +1,9 @@
 import readline from "readline"
 import { isValidCron } from "cron-validator";
 import cli_color from "cli-color";
-import * as BdsCore from "@the-bds-maneger/core";
+import BdsCore from "@the-bds-maneger/core";
 import { Argv as yargsArgv } from "yargs";
+import { Platform } from "@the-bds-maneger/core/dist/dts/globalType";
 
 export default async function startServer(yargs: yargsArgv): Promise<void> {
   const options = await yargs.option("platform", {
@@ -23,7 +24,7 @@ export default async function startServer(yargs: yargsArgv): Promise<void> {
     type: "string",
     default: ""
   }).parseAsync();
-  const Platform = options.platform as BdsCore.bdsTypes.Platform;
+  const Platform = options.platform as Platform;
   if (!!options.cronBackup) {
     if (!(isValidCron(options.cronBackup, {seconds: options.cronBackup.split(/\s+/g).length >= 6}))) {
       console.error("Invalid cron job");
@@ -41,9 +42,12 @@ export default async function startServer(yargs: yargsArgv): Promise<void> {
   }
   const Server = await BdsCore.Server.Start(Platform);
   console.log("Session ID: %s", Server.id);
-  Server.logRegister("all", data => console.log(cli_color.blueBright(data.replace("true", cli_color.greenBright("true"))).replace("false", cli_color.redBright("false"))));
+  Server.log.on("all", data => console.log(cli_color.blueBright(data.replace("true", cli_color.greenBright("true"))).replace("false", cli_color.redBright("false"))));
   const Input = readline.createInterface({input: process.stdin,output: process.stdout})
-  Input.on("line", line => Server.commands.execCommand(line));
+  Input.on("line", line => {
+    if (line.trim() === "stop") return Server.commands.stop();
+    return Server.commands.execCommand(line);
+  });
   if (!!options.cronBackup) {
     console.log("Backup Maps enabled");
     const backupCron = Server.creteBackup(options.cronBackup);
@@ -53,7 +57,7 @@ export default async function startServer(yargs: yargsArgv): Promise<void> {
     let closed = false;
     Input.on("close", () => {
       if (closed) return;
-      Server.stop();
+      Server.commands.stop();
       closed = true;
       resolve();
     });
