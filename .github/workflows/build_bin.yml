@@ -1,4 +1,4 @@
-name: Build binaries
+name: Build binarys
 on:
   push:
     branches:
@@ -26,14 +26,17 @@ jobs:
         with:
           node-version: "${{ env.NODE_VERSION }}.x"
 
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
       - name: Cache nexe
         uses: actions/cache@v2
         with:
           path: ~/.nexe
           key: "${{ matrix.os }}_${{ github.ref }}_${{ github.repo }}_${{ env.NODE_VERSION }}"
-
-      - name: Install dependencies
-        run: npm ci
 
       - name: Build binary
         run: npm run build:bin
