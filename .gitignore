@@ -1,6 +1,7 @@
-/*.log
 node_modules/
 dist/
+/bin_*
+/*.log
 src/**/*.d.ts
 src/**/*.d.js
 *backup_*.zip
