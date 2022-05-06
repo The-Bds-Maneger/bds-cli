@@ -7,17 +7,29 @@ const options = {
   input: path.resolve(__dirname, "./dist/index.js"),
   resources: fs.readdirSync(path.resolve(__dirname, "./dist/")).map(file => path.resolve(__dirname, "./dist/", file)),
   output: path.resolve(process.cwd(), `bin_${process.platform}_${process.arch}${process.platform === "win32" ? ".exe" : ""}`),
-  targets: (() => {let a = process.argv.find(arg => arg.includes("--target="));if (!!a) return a.replace("--target=", ""); return undefined;})()
+  targets: (() => {let a = process.argv.find(arg => arg.includes("--target="));if (!!a) return a.replace("--target=", ""); return undefined;})(),
+  configure: (() => {
+    if (process.argv.includes("--config_args=")) {
+      const confArgs = process.argv.find(arg => arg.includes("--config_args="));
+      if (/".*"/.test(confArgs)) {
+        return confArgs.replace("--config_args=", "").match(/"(.*)"/)[1].split(/,/).map(a => a.trim());        
+      } else {
+        return confArgs.replace("--config_args=", "").split(/,/).map(a => a.trim());
+      }
+    }
+    return undefined;
+  })()
 };
 
 nexe.compile(options).catch(err => {
   if (String(err).includes("--build")) {
     console.log("Attempting to build for current platform...");
+    console.log("Base config:\n", options);
     return nexe.compile({
       ...options,
       build: true,
       verbose: process.argv.includes("--verbose"),
-      python: process.platform === "win32" ? "python.exe" : "python3",
+      python: process.platform === "win32" ? "python.exe" : "python3"
     });
   }
   throw err;
