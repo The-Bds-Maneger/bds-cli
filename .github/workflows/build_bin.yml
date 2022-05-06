@@ -11,7 +11,7 @@ jobs:
   # Build Bin to MacOS and Linux
   build_nix:
     runs-on: ${{ matrix.os }}
-    name: "(Os: ${{ matrix.os == 'ubuntu-latest' && 'Linux' || 'MacOS' }}, Arch: ${{ runner.arch }}) Build binary"
+    name: "(Os: ${{ matrix.os == 'ubuntu-latest' && 'Linux' || 'MacOS' }}, Arch: ?) Build binary"
     strategy:
       matrix:
         os:
