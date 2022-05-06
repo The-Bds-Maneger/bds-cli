@@ -38,12 +38,6 @@ jobs:
           key: "${{ matrix.os }}_nexe-build_${{ env.NODE_VERSION }}"
           path: ~/.nexe
 
-      - name: Cache nexe
-        uses: actions/cache@v2
-        with:
-          key: "${{ matrix.os }}_${{ github.ref }}__${{ env.NODE_VERSION }}"
-          path: ~/.nexe
-
       - name: Build binary
         run: npm run build:bin
 
@@ -79,7 +73,10 @@ jobs:
           path: "%HOMEPATH%\\.nexe"
 
       - name: build binary
-        run: npm run build:bin
+        run: npm run build:bin -- --verbose
+        env:
+          NODE_VERSION: "${{ env.NODE_VERSION }}"
+          
 
       - name: Upload binary
         uses: actions/upload-artifact@v3
@@ -113,7 +110,7 @@ jobs:
           path: "%HOMEPATH%\\.nexe"
 
       - name: build binary
-        run: npm run build:bin -- --target=linux-arm64
+        run: npm run build:bin -- --target=linux-arm64 --verbose
 
       - name: Upload binary
         uses: actions/upload-artifact@v3
