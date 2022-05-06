@@ -11,7 +11,7 @@ jobs:
   # Build Bin to MacOS and Linux
   build_nix:
     runs-on: ${{ matrix.os }}
-    name: (MacOS/Linux) Build binary (${{ matrix.os == 'ubuntu-latest' && 'Linux' || 'MacOS' }})
+    name: "(Os: ${{ matrix.os == 'ubuntu-latest' && 'Linux' || 'MacOS' }}, Arch: ${{ runner.arch }}) Build binary"
     strategy:
       matrix:
         os:
@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         name: Checkout
-      
+
       - uses: actions/setup-node@v3.1.1
         name: Setup Node.js
         with:
@@ -47,49 +47,10 @@ jobs:
           name: ${{ matrix.os == 'ubuntu-latest' && 'Linux' || 'MacOS' }}_${{ runner.arch }}_${{ env.NODE_VERSION }}
           path: bin_*
 
-  # Build for Windows x64
-  build_win:
-    runs-on: windows-latest
-    name: (Windows) Build binary (windows-latest)
-    steps:
-      - uses: actions/checkout@v3
-        name: Checkout
-
-      - uses: actions/setup-node@v3.1.1
-        name: Setup Node.js
-        with:
-          node-version: "${{ env.NODE_VERSION }}.x"
-
-      - name: Set up NASM
-        uses: ilammy/setup-nasm@v1.3.0
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Cache nexe
-        uses: actions/cache@v3
-        with:
-          key: "windows-latest_nexe-build_${{ env.NODE_VERSION }}"
-          path: "%HOMEPATH%\\.nexe"
-
-      - name: build binary
-        run: npm run build:bin -- --verbose
-        env:
-          NODE_VERSION: "${{ env.NODE_VERSION }}"
-
-      - name: Upload binary
-        uses: actions/upload-artifact@v3
-        with:
-          name: Windows_x64_${{ env.NODE_VERSION }}
-          path: bin_*
-
   # Build for Linux arm64
   build_linux_arm64:
     runs-on: ubuntu-latest
-    name: (Linux) Build binary (linux Arm64)
+    name: "(Os: Linux, Arch: Arm64/aarch64) Build binary"
     steps:
       - uses: actions/checkout@v3
         name: Checkout
@@ -112,7 +73,7 @@ jobs:
         uses: actions/cache@v3
         with:
           key: "linux-arm64_nexe-build_${{ env.NODE_VERSION }}"
-          path: "%HOMEPATH%\\.nexe"
+          path: ~/.nexe
 
       - name: build binary
         run: npm run build:bin -- --target=linux-arm64 --verbose --config_args="--cross-compiling,--dest-os=linux,--with-arm-float-abi=hard,--with-arm-fpu=neon"
@@ -126,4 +87,45 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: Linux-arm64_${{ env.NODE_VERSION }}
+          path: bin_*
+
+  # Build for Windows x64
+  build_win:
+    runs-on: windows-latest
+    name: "(Os: Windows, Arch: x64/amd64) Build binary"
+    steps:
+      - uses: actions/checkout@v3
+        name: Checkout
+
+      - uses: actions/setup-node@v3.1.1
+        name: Setup Node.js
+        with:
+          node-version: "${{ env.NODE_VERSION }}.x"
+
+      - name: Set up NASM
+        uses: ilammy/setup-nasm@v1.3.0
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Cache nexe
+        uses: actions/cache@v3
+        with:
+          key: "windows-latest_nexe-build_${{ env.NODE_VERSION }}"
+          path: |
+            ~\.nexe
+            %HOMEDIR%\.nexe
+
+      - name: build binary
+        run: npm run build:bin --
+        env:
+          NODE_VERSION: "${{ env.NODE_VERSION }}"
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: Windows_x64_${{ env.NODE_VERSION }}
           path: bin_*
