@@ -33,7 +33,7 @@ jobs:
         run: npm run build
 
       - name: Cache nexe
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.nexe
           key: "${{ matrix.os }}_${{ github.ref }}_${{ github.repo }}_${{ env.NODE_VERSION }}"
