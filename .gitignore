@@ -1,6 +1,6 @@
 node_modules/
 dist/
-/bin_*
+/BdsManegerCLI_*
 /*.log
 src/**/*.d.ts
 src/**/*.d.js
