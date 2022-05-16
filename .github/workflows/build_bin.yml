@@ -52,7 +52,7 @@ jobs:
       - name: Upload binary
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ matrix.os == 'ubuntu-latest' && 'Linux' || 'MacOS' }}_${{ runner.arch }}_${{ env.NODE_VERSION }}
+          name: ${{ matrix.os == 'ubuntu-latest' && 'Linux' || matrix.os == 'windows-latest' && 'Windows' || 'MacOS' }}_${{ runner.arch }}_${{ env.NODE_VERSION }}
           path: BdsManegerCLI_*
 
   # Build for Linux and Android (arm64)
