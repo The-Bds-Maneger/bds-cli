@@ -1,7 +1,5 @@
-import inquirer from "inquirer";
 import { Argv as yargsArgv } from "yargs";
-import bdscore from "@the-bds-maneger/core";
-import { Platform } from "@the-bds-maneger/core/dist/dts/globalType";
+import * as bdscore from "@the-bds-maneger/core";
 // import * as BdsCore from "@the-bds-maneger/core";
 
 export default async function createServerConfig(yargs: yargsArgv): Promise<any> {
@@ -10,13 +8,13 @@ export default async function createServerConfig(yargs: yargsArgv): Promise<any>
     describe: "Bds Core Platform",
     demandOption: true,
     type: "string",
-    choices: bdscore.bdsTypes.PlatformArray,
+    choices: bdscore.globalType.PlatformArray,
     default: "bedrock"
   }).command("get", "Get Platform config", async yargs => {
     if (!yargs.parseSync().platform) return yargs.showHelp();
-    const platform = yargs.parseSync().platform as Platform;
+    const platform = yargs.parseSync().platform as bdscore.globalType.Platform;
     if (platform === "bedrock") {
-      const bedrockConfig = await bdscore.platform.bedrock.config.getConfig();
+      const bedrockConfig = await bdscore.bedrock.config.getConfig();
       let showBedrock = "Bedrock Config:\n\n";
       showBedrock+="World name: "+bedrockConfig.worldName+"\n";
       showBedrock+="World seed: "+(bedrockConfig.worldSeed !== "null"?bedrockConfig.worldSeed:"No seed detected")+"\n";
@@ -28,10 +26,10 @@ export default async function createServerConfig(yargs: yargsArgv): Promise<any>
     throw new Error(`Platform ${platform} not supported`);
   }).command("set", "Set platform config", async yargs => {
     if (!yargs.parseSync().platform) return yargs.showHelp();
-    const platform = yargs.parseSync().platform as Platform;
+    const platform = yargs.parseSync().platform as bdscore.globalType.Platform;
     if (platform === "bedrock") {
-      const currentConfig = await bdscore.platform.bedrock.config.getConfig();
-      const answers = await inquirer.prompt([
+      const currentConfig = await bdscore.bedrock.config.getConfig();
+      const answers = await (await import("inquirer")).default.prompt([
         {
           type: "input",
           name: "worldName",
@@ -63,7 +61,7 @@ export default async function createServerConfig(yargs: yargsArgv): Promise<any>
           default: currentConfig.maxPlayers
         }
       ]);
-      await bdscore.platform.bedrock.config.CreateServerConfig({
+      await bdscore.bedrock.config.CreateServerConfig({
         worldName: answers.worldName,
         serverName: answers.worldName,
         worldSeed: answers.worldSeed,

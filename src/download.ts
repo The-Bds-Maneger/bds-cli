@@ -1,8 +1,7 @@
 import { Argv as yargsArgv } from "yargs";
-import BdsCore from "@the-bds-maneger/core";
+import * as BdsCore from "@the-bds-maneger/core";
 import * as serverVersions from "@the-bds-maneger/server_versions";
 import cli_color from "cli-color";
-import { Platform } from "@the-bds-maneger/core/dist/dts/globalType";
 
 export default async function downloadManeger(yargs: yargsArgv): Promise<void> {
   const options = yargs.option("platform", {
@@ -10,7 +9,7 @@ export default async function downloadManeger(yargs: yargsArgv): Promise<void> {
     describe: "Bds Core Platform",
     demandOption: true,
     type: "string",
-    choices: BdsCore.bdsTypes.PlatformArray,
+    choices: BdsCore.globalType.PlatformArray,
     default: "bedrock"
   }).option("version", {
     alias: "v",
@@ -24,21 +23,21 @@ export default async function downloadManeger(yargs: yargsArgv): Promise<void> {
     type: "boolean",
     default: false
   }).parseSync();
-  const Platform = options.platform as Platform;
+  const Platform = options.platform as BdsCore.globalType.Platform;
   if (options.listVersions) {
     console.log("Loading available versions...");
     const versions = await serverVersions.getAllVersions(Platform);
     let toOut = "";
     for (const {version, datePublish} of versions) {
-      // @ts-ignore
-      toOut += `\n${cli_color.redBright(version)}: Release date: ${datePublish.getDate()}/${datePublish.getMonth()+1}/${datePublish.getFullYear()}`;
+      const dat = new Date(datePublish);
+      toOut += `\n${cli_color.redBright(version)}: Release date: ${dat.getDate()}/${dat.getMonth()+1}/${dat.getFullYear()}`;
     }
     console.log(toOut);
   } else {
     console.log("Starting Download...");
-    return BdsCore.downloadServer.DownloadServer(Platform, options.version === "latest"?true:options.version).then(res => {
+    return BdsCore[Platform].DownloadServer(options.version === "latest"?true:options.version).then(res => {
       console.log("Sucess to download server");
-      console.info("Release date: %s", `${res.Date.getDate()}/${res.Date.getMonth()+1}/${res.Date.getFullYear()}`);
+      console.info("Release date: %s", `${res.publishDate.getDate()}/${res.publishDate.getMonth()+1}/${res.publishDate.getFullYear()}`);
     });
   }
 }
