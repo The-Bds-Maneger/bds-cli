@@ -2,8 +2,9 @@
   "name": "@the-bds-maneger/bds-cli",
   "version": "1.0.1",
   "description": "A simple CLI to manage your server as quickly and efficiently as possible.",
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
   "private": false,
+  "type": "commonjs",
   "publishConfig": {
     "access": "public"
   },
@@ -23,7 +24,9 @@
   "keywords": [
     "bds_core",
     "bds-core",
-    "minecraft"
+    "minecraft",
+    "minecraft-server",
+    "server"
   ],
   "author": "The Bds Maneger Project",
   "license": "AGPL-3.0-or-later",
@@ -31,22 +34,22 @@
     "url": "https://github.com/The-Bds-Maneger/bds-cli/issues"
   },
   "homepage": "https://github.com/The-Bds-Maneger/bds-cli#readme",
-  "devDependencies": {
-    "@types/cli-color": "^2.0.2",
-    "@types/inquirer": "^8.2.1",
-    "@types/node": "^18.0.0",
-    "@types/yargs": "^17.0.10",
-    "nexe": "^4.0.0-rc.1",
-    "standard-version": "^9.3.2",
-    "ts-node": "^10.7.0",
-    "typescript": "^4.6.3"
-  },
   "dependencies": {
-    "@the-bds-maneger/core": "^2.1.1",
-    "@the-bds-maneger/server_versions": "^2.1.2",
+    "@the-bds-maneger/core": "^3.1.0",
+    "@the-bds-maneger/server_versions": "^2.2.2",
     "cli-color": "^2.0.2",
     "cron-validator": "^1.3.1",
     "inquirer": "^9.0.0",
-    "yargs": "^17.4.1"
+    "yargs": "^17.5.1"
+  },
+  "devDependencies": {
+    "@types/cli-color": "^2.0.2",
+    "@types/inquirer": "^8.2.1",
+    "@types/node": "^18.0.1",
+    "@types/yargs": "^17.0.10",
+    "nexe": "^4.0.0-rc.1",
+    "standard-version": "^9.5.0",
+    "ts-node": "^10.8.2",
+    "typescript": "^4.7.4"
   }
 }

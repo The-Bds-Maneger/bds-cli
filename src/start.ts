@@ -1,9 +1,8 @@
 import readline from "readline"
 import { isValidCron } from "cron-validator";
 import cli_color from "cli-color";
-import BdsCore from "@the-bds-maneger/core";
+import * as BdsCore from "@the-bds-maneger/core";
 import { Argv as yargsArgv } from "yargs";
-import { Platform } from "@the-bds-maneger/core/dist/dts/globalType";
 
 export default async function startServer(yargs: yargsArgv): Promise<void> {
   const options = await yargs.option("platform", {
@@ -11,7 +10,7 @@ export default async function startServer(yargs: yargsArgv): Promise<void> {
     describe: "Bds Core Platform",
     demandOption: true,
     type: "string",
-    choices: BdsCore.bdsTypes.PlatformArray,
+    choices: BdsCore.globalType.PlatformArray,
     default: "bedrock"
   }).option("cronBackup", {
     alias: "c",
@@ -24,7 +23,7 @@ export default async function startServer(yargs: yargsArgv): Promise<void> {
     type: "string",
     default: ""
   }).parseAsync();
-  const Platform = options.platform as Platform;
+  const Platform = options.platform as BdsCore.globalType.Platform;
   if (!!options.cronBackup) {
     if (!(isValidCron(options.cronBackup, {seconds: options.cronBackup.split(/\s+/g).length >= 6}))) {
       console.error("Invalid cron job");
@@ -40,9 +39,9 @@ export default async function startServer(yargs: yargsArgv): Promise<void> {
       }
     }
   }
-  const Server = await BdsCore.Server.Start(Platform);
+  const Server = await BdsCore[Platform].server.startServer();
   console.log("Session ID: %s", Server.id);
-  Server.log.on("all", data => console.log(cli_color.blueBright(data.replace("true", cli_color.greenBright("true"))).replace("false", cli_color.redBright("false"))));
+  Server.server.on("log", data => console.log(cli_color.blueBright(data.replace("true", cli_color.greenBright("true"))).replace("false", cli_color.redBright("false"))));
   const Input = readline.createInterface({input: process.stdin,output: process.stdout})
   Input.on("line", line => {
     if (line.trim() === "stop") return Server.commands.stop();
@@ -51,7 +50,7 @@ export default async function startServer(yargs: yargsArgv): Promise<void> {
   if (!!options.cronBackup) {
     console.log("Backup Maps enabled");
     const backupCron = Server.creteBackup(options.cronBackup);
-    Server.onExit(() => backupCron.stop());
+    Server.server.on("closed", () => backupCron.stop());
   }
   return new Promise(resolve => {
     let closed = false;
@@ -61,7 +60,7 @@ export default async function startServer(yargs: yargsArgv): Promise<void> {
       closed = true;
       resolve();
     });
-    Server.onExit(code => {
+    Server.server.once("closed", code => {
       console.log("Server exit with code: %s", code);
       if (closed) return;
       Input.close();
