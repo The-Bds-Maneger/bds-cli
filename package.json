@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "build:bin": "node buildBin.js",
+    "build:bin": "ts-node buildBin.ts",
     "release": "standard-version",
     "start": "ts-node src/index.ts"
   },

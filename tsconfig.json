@@ -1,6 +1,6 @@
 {
   "include": ["src/"],
-  "exclude": ["node_modules/", "buildBin.js"],
+  "exclude": ["node_modules/", "buildBin.ts"],
   "compilerOptions": {
     "esModuleInterop": true,
     "moduleResolution": "node",

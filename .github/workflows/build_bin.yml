@@ -47,7 +47,7 @@ jobs:
             %HOMEDIR%\.nexe
 
       - name: Build Binary file
-        run: npm run build:bin
+        run: npm run build:bin -- --verbose
 
       - name: Upload binary
         uses: actions/upload-artifact@v3
