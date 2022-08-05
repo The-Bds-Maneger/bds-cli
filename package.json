@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@types/cli-color": "^2.0.2",
-    "@types/inquirer": "^8.2.1",
+    "@types/inquirer": "^9.0.0",
     "@types/node": "^18.0.1",
     "@types/yargs": "^17.0.10",
     "nexe": "^4.0.0-rc.1",
