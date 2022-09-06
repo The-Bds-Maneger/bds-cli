@@ -32,6 +32,7 @@ const FileName = `BdsManegerCLI_${Platform}_${Arch}${Platform === "win32" ? ".ex
 const options: Partial<nexe.NexeOptions> = {
   input: path.resolve(__dirname, "./dist/index.js"),
   targets: [`${Platform}_${Arch}`],
+  verbose: Yargs.verbose,
   resources: [
     path.resolve(__dirname, "package*.json"),
     path.resolve(__dirname, "./dist")
@@ -47,7 +48,6 @@ nexe.compile(options).catch(err => {
     return nexe.compile({
       ...options,
       build: true,
-      verbose: Yargs.verbose,
       python: process.platform === "win32" ? "python.exe" : "python3"
     });
   }
