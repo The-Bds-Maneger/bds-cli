@@ -26,7 +26,7 @@ export default async function downloadManeger(yargs: yargsArgv): Promise<void> {
   const Platform = options.platform as BdsCore.globalType.Platform;
   if (options.listVersions) {
     console.log("Loading available versions...");
-    const versions = await serverVersions.getAllVersions(Platform);
+    const versions = await serverVersions.findVersion(Platform) as any[];
     let toOut = "";
     for (const {version, datePublish} of versions) {
       const dat = new Date(datePublish);
