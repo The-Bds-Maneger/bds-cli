@@ -61,8 +61,8 @@ jobs:
     strategy:
       matrix:
         target:
-          - linux-arm64
-          - android-arm64
+          - linux
+          - android
     name: "(Os: ${{ matrix.target == 'linux-arm64' && 'Linux' || 'Android' }}, Arch: Arm64/aarch64) Build binary"
     steps:
       - name: Checkout
@@ -91,10 +91,10 @@ jobs:
           path: ~/.nexe
 
       - name: Build Binary file
-        run: npm run build:bin -- --target=${{ matrix.target }} --verbose --config_args="${{ matrix.target == 'linux-arm64' && env.LINUXARMCO || env.ANDROIDCON }}"
+        run: npm run build:bin -- --Platform=${{ matrix.target }} --verbose ${{ matrix.target == 'linux-arm64' && env.LINUXARMCO || env.ANDROIDCON }}
         env:
-          LINUXARMCO: "--cross-compiling,--dest-os=linux,--with-arm-float-abi=hard,--with-arm-fpu=neon"
-          ANDROIDCON: "--dest-cpu=arm64,--dest-os=android,--shared-cares,--shared-openssl,--shared-zlib,--cross-compiling"
+          LINUXARMCO: "-c=\"--cross-compiling\" -c=\"--dest-os=linux\" -c=\"--with-arm-float-abi=hard\" -c=\"--with-arm-fpu=neon\""
+          ANDROIDCON: "-c=\"--dest-cpu=arm64\" -c=\"--dest-os=android\" -c=\"--shared-cares\" -c=\"--shared-openssl\" -c=\"--shared-zlib\" -c=\"--cross-compiling\""
           CXX_host: "g++"
           CC_host: "gcc"
           CXX: aarch64-linux-gnu-g++
