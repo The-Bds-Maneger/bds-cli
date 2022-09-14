@@ -63,7 +63,7 @@ jobs:
       matrix:
         target:
           - linux
-          - android
+          # - android
     name: "${{ matrix.target == 'linux' && 'Linux' || 'Android' }} binary build for Arm64 arch"
     steps:
       - name: Checkout
@@ -93,7 +93,7 @@ jobs:
 
       - name: Build Binary file
         continue-on-error: true
-        run: npm run build:bin -- --Arch=arm64 --Platform=${{ matrix.target }} --verbose ${{ matrix.target == 'linux' && '-c="--cross-compiling" -c="--dest-os=linux" -c="--with-arm-float-abi=hard" -c="--with-arm-fpu=neon"' || '-c="--dest-cpu=arm64" -c="--dest-os=android" -c="--shared-cares" -c="--shared-openssl" -c="--shared-zlib" -c="--cross-compiling"' }}
+        run: npm run build:bin -- --Arch=arm64 --Platform=${{ matrix.target }}
         env:
           CXX_host: "g++"
           CC_host: "gcc"
