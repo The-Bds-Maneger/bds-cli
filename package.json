@@ -11,11 +11,10 @@
   "scripts": {
     "build": "tsc",
     "build:bin": "node buildBin.cjs",
-    "release": "standard-version",
-    "start": "ts-node src/index.ts"
+    "release": "standard-version"
   },
   "bin": {
-    "bds_maneger": "dist/index.js"
+    "bds_maneger": "bin.cjs"
   },
   "repository": {
     "type": "git",
