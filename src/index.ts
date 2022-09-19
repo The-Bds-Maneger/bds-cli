@@ -21,7 +21,17 @@ const Yargs = yargs(process.argv.slice(2)).help().version(false).alias("h", "hel
 });
 
 // Install Server
-Yargs.command("download", "Download and Install server", yargs => yargs.option("version", {alias: "v", description: "Server version", default: "latest"}), options => {
+Yargs.command("download", "Download and Install server", yargs => {
+  const options = yargs.option("version", {alias: "v", description: "Server version", default: "latest"}).parseSync();
+  if (options.platform === "Bedrock") return BdsCore.Bedrock.installServer(options.version);
+  else if (options.platform === "Java") return BdsCore.Java.installServer(options.version);
+  else if (options.platform === "Spigot") return BdsCore.Spigot.installServer(options.version);
+  else if (options.platform === "PocketmineMP") return BdsCore.PocketmineMP.installServer(options.version);
+  else if (options.platform === "Powernukkit") return BdsCore.Powernukkit.installServer(options.version);
+  throw new Error("Invalid platform");
+});
+Yargs.command("install", "Download and Install server", yargs => {
+  const options = yargs.option("version", {alias: "v", description: "Server version", default: "latest"}).parseSync();
   if (options.platform === "Bedrock") return BdsCore.Bedrock.installServer(options.version);
   else if (options.platform === "Java") return BdsCore.Java.installServer(options.version);
   else if (options.platform === "Spigot") return BdsCore.Spigot.installServer(options.version);
@@ -40,22 +50,22 @@ Yargs.command("run", "Start server", async yargs => {
   else if (options.platform === "PocketmineMP") server = await BdsCore.PocketmineMP.startServer();
   else if (options.platform === "Powernukkit") server = await BdsCore.Powernukkit.startServer({maxMemory: options.javaMaxMemory});
   else throw new Error("Invalid platform");
-  server.on("log_stdout", console.log);
   server.on("log_stderr", data => console.log(cliColors.redBright(data)));
+  server.on("log_stdout", data => console.log(cliColors.green(data)));
   server.once("serverStarted", () => {
     let log = "";
     server.portListening.forEach(port => {
-      log += `Server port: ${port.port}\n${"\tTo: "+(port.plugin === "geyser"?"Bedrock":options.platform+"\n")}`;
+      log += `Port listen: ${port.port}\n${"\tTo: "+(port.plugin === "geyser"?"Bedrock":(port.plugin||options.platform)+"\n")}`;
     });
     console.log(log.trim());
+    console.log(cliColors.yellowBright("Commands inputs now avaible"))
+    const line = readline.createInterface({input: process.stdin, output: process.stdout});
+    line.on("line", line => server.runCommand(line));
+    line.once("SIGINT", () => server.stopServer());
+    line.once("SIGCONT", () => server.stopServer());
+    line.once("SIGTSTP", () => server.stopServer());
+    server.once("exit", () => line.close());
   });
-
-  const line = readline.createInterface({input: process.stdin, output: process.stdout});
-  line.on("line", line => server.runCommand(line));
-  line.once("SIGINT", () => server.stopServer());
-  line.once("SIGCONT", () => server.stopServer());
-  line.once("SIGTSTP", () => server.stopServer());
-  server.once("exit", () => line.close());
   return server.waitExit();
 });
 
