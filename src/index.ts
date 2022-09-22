@@ -16,25 +16,18 @@ const Yargs = yargs(process.argv.slice(2)).help().version(false).alias("h", "hel
     "Java",
     "Spigot",
     "PocketmineMP",
-    "Powernukkit"
+    "Powernukkit",
+    "Paper"
   ]
 });
 
 // Install Server
-Yargs.command("download", "Download and Install server", yargs => {
-  const options = yargs.option("version", {alias: "v", description: "Server version", default: "latest"}).parseSync();
-  if (options.platform === "Bedrock") return BdsCore.Bedrock.installServer(options.version);
-  else if (options.platform === "Java") return BdsCore.Java.installServer(options.version);
-  else if (options.platform === "Spigot") return BdsCore.Spigot.installServer(options.version);
-  else if (options.platform === "PocketmineMP") return BdsCore.PocketmineMP.installServer(options.version);
-  else if (options.platform === "Powernukkit") return BdsCore.Powernukkit.installServer(options.version);
-  throw new Error("Invalid platform");
-});
 Yargs.command("install", "Download and Install server", yargs => {
   const options = yargs.option("version", {alias: "v", description: "Server version", default: "latest"}).parseSync();
   if (options.platform === "Bedrock") return BdsCore.Bedrock.installServer(options.version);
   else if (options.platform === "Java") return BdsCore.Java.installServer(options.version);
   else if (options.platform === "Spigot") return BdsCore.Spigot.installServer(options.version);
+  else if (options.platform === "Paper") return BdsCore.PaperMC.installServer(options.version);
   else if (options.platform === "PocketmineMP") return BdsCore.PocketmineMP.installServer(options.version);
   else if (options.platform === "Powernukkit") return BdsCore.Powernukkit.installServer(options.version);
   throw new Error("Invalid platform");
@@ -42,16 +35,17 @@ Yargs.command("install", "Download and Install server", yargs => {
 
 // Start Server
 Yargs.command("run", "Start server", async yargs => {
-  const options = yargs.option("javaMaxMemory", {alias: "M", type: "number"}).option("installGeyser", {alias: "g", type: "boolean", description: "Install geyser plugin to Spigot"}).parseSync();
+  const options = yargs.option("javaMaxMemory", {alias: "M", type: "number"}).option("javaAllFreeMem", {alias: "F", type: "boolean", default: true, description: "Use all free memory to run Java server"}).option("installGeyser", {alias: "g", type: "boolean", description: "Install geyser plugin to supported servers"}).parseSync();
   let server: actions;
   if (options.platform === "Bedrock") server = await BdsCore.Bedrock.startServer();
   else if (options.platform === "Java") server = await BdsCore.Java.startServer({maxMemory: options.javaMaxMemory});
-  else if (options.platform === "Spigot") server = await BdsCore.Spigot.startServer({maxMemory: options.javaMaxMemory, configureGeyser: options.installGeyser});
+  else if (options.platform === "Spigot") server = await BdsCore.Spigot.startServer({maxMemory: options.javaMaxMemory, maxFreeMemory: options.javaAllFreeMem, pluginList: options.installGeyser ? ["Geyser"]:undefined});
+  else if (options.platform === "Paper") server = await BdsCore.PaperMC.startServer({maxMemory: options.javaMaxMemory, maxFreeMemory: options.javaAllFreeMem, pluginList: options.installGeyser ? ["Geyser"]:undefined});
   else if (options.platform === "PocketmineMP") server = await BdsCore.PocketmineMP.startServer();
   else if (options.platform === "Powernukkit") server = await BdsCore.Powernukkit.startServer({maxMemory: options.javaMaxMemory});
   else throw new Error("Invalid platform");
   server.on("log_stderr", data => console.log(cliColors.redBright(data)));
-  server.on("log_stdout", data => console.log(cliColors.green(data)));
+  server.on("log_stdout", data => console.log(cliColors.greenBright(data)));
   server.once("serverStarted", () => {
     let log = "";
     server.portListening.forEach(port => {
@@ -69,7 +63,7 @@ Yargs.command("run", "Start server", async yargs => {
   return server.waitExit();
 });
 
-// Update settings (Alpha)
-// Yargs.command("config", "Platform config", yargs=>yargs.command("set", "Set platform config", yargs => yargs, () => {}).command({command: "*", handler: () => {Yargs.showHelp();}}), ()=>{});
+// Plugin maneger
+// Yargs.command("plugin", "Plugin maneger", yargs=>yargs.command("install", "Install plugin", yargs => yargs, () => {}).command({command: "*", handler: () => {Yargs.showHelp();}}), ()=>{});
 
 Yargs.command({command: "*", handler: () => {Yargs.showHelp();}}).parseAsync();
