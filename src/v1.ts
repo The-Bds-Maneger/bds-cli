@@ -109,11 +109,37 @@ app.post<any, any, any, any, startQuery>("/start", async (req, res) => {
   });
 });
 
+app.put("/:sessionId/stop", (req, res) => {
+  const session = sessions[req.params.sessionId];
+  if (!session) {
+    res.status(404).json({error: "Session id not exists"});
+    return;
+  }
+  session.stopServer().then(exitCode => res.json({exitCode}));
+});
+
+app.put("/:sessionId/command", (req, res) => {
+  const session = sessions[req.params.sessionId];
+  if (!session) {
+    res.status(404).json({error: "Session id not exists"});
+    return;
+  }
+  session.runCommand(req.body?.text||req.body);
+});
+
 app.get("/:sessionId/log", async (req, res) => {
   const session = sessions[req.params.sessionId];
-  if (!session) return res.status(404).json({error: "Session id not exists"});
-  if (session.processConfig.options?.logPath?.stdout && fs.existsSync(session.processConfig.options?.logPath?.stdout)) return fs.createReadStream(session.processConfig.options.logPath.stdout).pipe(res);
-  else return res.status(400).json({
+  if (!session) {
+    res.status(404).json({error: "Session id not exists"});
+    return;
+  }
+  if (session.processConfig.options?.logPath?.stdout && fs.existsSync(session.processConfig.options?.logPath?.stdout)) {
+    const logStdout = fs.createReadStream(session.processConfig.options.logPath.stdout);
+    logStdout.on("data", data => res.write(data));
+    session.on("log_stdout", data => res.write(data));
+    session.on("exit", () => res.end());
+  } else res.status(400).json({
     error: "no Log files"
   });
+  return;
 });
