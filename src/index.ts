@@ -6,7 +6,31 @@ import cliColors from "cli-color";
 import { actions } from "@the-bds-maneger/core/dist/globalPlatfroms";
 
 // type currentPlatform = "Bedrock"|"Java"|"Spigot"|"PocketmineMP"|"Powernukkit";
-const Yargs = yargs(process.argv.slice(2)).help().version(false).alias("h", "help").wrap(yargs.terminalWidth()).option("platform", {
+const Yargs = yargs(process.argv.slice(2)).help().version(false).alias("h", "help").wrap(yargs.terminalWidth());
+
+// Bds import/export
+Yargs.command("import", "import from another computer", async yargs => {
+  const options = yargs.options("host", {
+    type: "string"
+  }).options("port", {
+    type: "number"
+  }).option("authToken", {
+    type: "string",
+    demandOption: true,
+    required: true
+  }).parseSync();
+  return BdsCore.importBds(options.host, options.port, options.authToken);
+}).command("export", "Export bds root folder", async yargs => {
+  yargs.option("port", {
+    type: "number",
+    description: "listen port server, default is random"
+  }).parseSync();
+  const server = BdsCore.exportBds();
+  await server.listen();
+  return server.PromisseWait;
+});
+
+const addPlatform = (Yargs) => Yargs.option("platform", {
   alias: "P",
   description: "Select Bds Maneger core platform",
   demandOption: true,
@@ -23,6 +47,7 @@ const Yargs = yargs(process.argv.slice(2)).help().version(false).alias("h", "hel
 
 // Install Server
 Yargs.command("install", "Download and Install server", yargs => {
+  addPlatform(yargs);
   const options = yargs.option("version", {alias: "v", description: "Server version", default: "latest"}).parseSync();
   if (options.platform === "Bedrock") return BdsCore.Bedrock.installServer(options.version);
   else if (options.platform === "Java") return BdsCore.Java.installServer(options.version);
@@ -35,6 +60,7 @@ Yargs.command("install", "Download and Install server", yargs => {
 
 // Start Server
 Yargs.command("run", "Start server", async yargs => {
+  addPlatform(yargs);
   const options = yargs.option("javaMaxMemory", {alias: "M", type: "number"}).option("javaAllFreeMem", {alias: "F", type: "boolean", default: true, description: "Use all free memory to run Java server"}).option("installGeyser", {alias: "g", type: "boolean", description: "Install geyser plugin to supported servers"}).parseSync();
   let server: actions;
   if (options.platform === "Bedrock") server = await BdsCore.Bedrock.startServer();
