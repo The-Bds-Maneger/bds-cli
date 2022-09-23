@@ -3,7 +3,6 @@ import readline from "node:readline";
 import yargs from "yargs";
 import * as BdsCore from "@the-bds-maneger/core";
 import cliColors from "cli-color";
-import { actions } from "@the-bds-maneger/core/dist/globalPlatfroms";
 
 // type currentPlatform = "Bedrock"|"Java"|"Spigot"|"PocketmineMP"|"Powernukkit";
 const Yargs = yargs(process.argv.slice(2)).help().version(false).alias("h", "help").wrap(yargs.terminalWidth());
@@ -19,15 +18,15 @@ Yargs.command("import", "import from another computer", async yargs => {
     demandOption: true,
     required: true
   }).parseSync();
-  return BdsCore.importBds(options.host, options.port, options.authToken);
+  return BdsCore.importBds({host: options.host, port: options.port, authToken: options.authToken});
 }).command("export", "Export bds root folder", async yargs => {
-  yargs.option("port", {
+  const opts = yargs.option("port", {
     type: "number",
     description: "listen port server, default is random"
   }).parseSync();
-  const server = BdsCore.exportBds();
-  await server.listen();
-  return server.PromisseWait;
+  const server = new BdsCore.exportBds();
+  await server.listen(opts.port);
+  return server.waitClose();
 });
 
 const addPlatform = (Yargs) => Yargs.option("platform", {
@@ -62,7 +61,7 @@ Yargs.command("install", "Download and Install server", yargs => {
 Yargs.command("run", "Start server", async yargs => {
   addPlatform(yargs);
   const options = yargs.option("javaMaxMemory", {alias: "M", type: "number"}).option("javaAllFreeMem", {alias: "F", type: "boolean", default: true, description: "Use all free memory to run Java server"}).option("installGeyser", {alias: "g", type: "boolean", description: "Install geyser plugin to supported servers"}).parseSync();
-  let server: actions;
+  let server: BdsCore.globalPlatfroms.actions;
   if (options.platform === "Bedrock") server = await BdsCore.Bedrock.startServer();
   else if (options.platform === "Java") server = await BdsCore.Java.startServer({maxMemory: options.javaMaxMemory});
   else if (options.platform === "Spigot") server = await BdsCore.Spigot.startServer({maxMemory: options.javaMaxMemory, maxFreeMemory: options.javaAllFreeMem, pluginList: options.installGeyser ? ["Geyser"]:undefined});
