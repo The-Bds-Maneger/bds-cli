@@ -9,8 +9,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc",
-    "build:bin": "node buildBin.cjs"
+    "build": "node buildBin.cjs"
   },
   "bin": {
     "bds_maneger": "bin.cjs"

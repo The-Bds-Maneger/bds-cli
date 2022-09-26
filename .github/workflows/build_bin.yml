@@ -37,18 +37,9 @@ jobs:
       - name: Transpiler TypeScript
         run: npm run build
 
-      - name: Cache nexe
-        uses: actions/cache@v3
-        with:
-          key: "${{ matrix.os }}_nexe-build_${{ env.NODE_VERSION }}"
-          path: |
-            ~/.nexe
-            ~\.nexe
-            %HOMEDIR%\.nexe
-
       - name: Build Binary file
         continue-on-error: true
-        run: npm run build:bin -- --verbose
+        run: npm run build -- --verbose
 
       - name: Upload binary
         uses: actions/upload-artifact@v3
@@ -85,15 +76,9 @@ jobs:
       - name: Transpiler Typescript
         run: npm run build
 
-      - name: Cache nexe
-        uses: actions/cache@v3
-        with:
-          key: "${{ matrix.target }}_nexe-build_${{ env.NODE_VERSION }}"
-          path: ~/.nexe
-
       - name: Build Binary file
         continue-on-error: true
-        run: npm run build:bin -- --Arch=arm64 --Platform=${{ matrix.target }}
+        run: npm run build -- --Arch=arm64 --Platform=${{ matrix.target }}
         env:
           CXX_host: "g++"
           CC_host: "gcc"
