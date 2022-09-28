@@ -1,10 +1,10 @@
-const readline = require("node:readline");
-const cliColors = require("cli-color");
-const yargs = require("yargs");
-const bdsCore = require("@the-bds-maneger/core");
+import readline from "node:readline";
+import cliColors from "cli-color";
+import yargs from "yargs";
+import * as bdsCore from "@the-bds-maneger/core";
 
 const Yargs = yargs(process.argv.slice(2)).help().version(false).alias("h", "help").wrap(yargs.terminalWidth());
-function addPlatform(Yargs = yargs) {
+function addPlatform(Yargs: yargs.Argv) {
   return Yargs.option("platform", {
     alias: "P",
     description: "Select Bds Maneger core platform",
@@ -40,20 +40,28 @@ Yargs.command("server", "Server maneger", Yargs => {
       alias: "a",
       type: "boolean",
       description: "Use all free ram memory to run Java server"
+    }).option("serverId", {
+      type: "string",
+      alias: "i",
+      default: "default"
     }).parseSync();
 
-    let server;
-    if (options.platform === "Bedrock") server = await bdsCore.Bedrock.startServer();
-    else if (options.platform === "Java") server = await bdsCore.Java.startServer({maxMemory: options.javaMaxMemory});
-    else if (options.platform === "Spigot") server = await bdsCore.Spigot.startServer({maxMemory: options.javaMaxMemory, maxFreeMemory: options.javaAllFreeMem});
-    else if (options.platform === "Paper") server = await bdsCore.PaperMC.startServer({maxMemory: options.javaMaxMemory, maxFreeMemory: options.javaAllFreeMem});
-    else if (options.platform === "PocketmineMP") server = await bdsCore.PocketmineMP.startServer();
-    else if (options.platform === "Powernukkit") server = await bdsCore.Powernukkit.startServer({maxMemory: options.javaMaxMemory});
+    const platformOptions: bdsCore.platformPathManeger.bdsPlatformOptions = {
+      id: options.serverId||"default"
+    };
+    let server: bdsCore.globalPlatfroms.actions;
+    if (options.platform === "Bedrock") server = await bdsCore.Bedrock.startServer(platformOptions);
+    else if (options.platform === "PocketmineMP") server = await bdsCore.PocketmineMP.startServer(platformOptions);
+    else if (options.platform === "Java") server = await bdsCore.Java.startServer({maxMemory: options.javaMaxMemory, platformOptions});
+    else if (options.platform === "Spigot") server = await bdsCore.Spigot.startServer({maxMemory: options.javaMaxMemory, maxFreeMemory: options.javaAllFreeMem, platformOptions});
+    else if (options.platform === "Paper") server = await bdsCore.PaperMC.startServer({maxMemory: options.javaMaxMemory, maxFreeMemory: options.javaAllFreeMem, platformOptions});
+    else if (options.platform === "Powernukkit") server = await bdsCore.Powernukkit.startServer({maxMemory: options.javaMaxMemory, platformOptions});
     else throw new Error("Invalid platform");
 
     server.on("log_stderr", data => console.log(cliColors.redBright(data)));
     server.on("log_stdout", data => console.log(cliColors.greenBright(data)));
     server.on("exit", data => console.info("Server exit with %s, signal: %s", data.code, data.signal));
+
     const line = readline.createInterface({input: process.stdin, output: process.stdout});
     line.on("line", line => server.runCommand(line));
     line.once("SIGINT", () => server.stopServer());
@@ -61,13 +69,15 @@ Yargs.command("server", "Server maneger", Yargs => {
     line.once("SIGTSTP", () => server.stopServer());
     server.once("exit", () => line.close());
     return server.waitExit();
-  })
+  }).command({command: "*", handler: () => {Yargs.showHelp();}});
 }).command("bds", "Bds core Manegers", Yargs => {
   return Yargs.command("import", "import from another computer", async yargs => {
     const options = yargs.options("host", {
-      type: "string"
+      type: "string",
+      demandOption: true
     }).options("port", {
-      type: "number"
+      type: "number",
+      demandOption: true
     }).option("authToken", {
       type: "string",
       demandOption: true,
@@ -83,17 +93,5 @@ Yargs.command("server", "Server maneger", Yargs => {
     await server.listen(opts.port);
     return server.waitClose();
   });
-}).command("plugin", "Plugin maneger", yargs => {
-  return yargs.command("install", "Install plugin to server (alpha)", async yargs => {
-    const options = addPlatform(yargs).option("plugin", {alias: "p", type: "array", string: true}).parseSync();
-    let plugin;
-    if (options.platform === "Paper") plugin = new bdsCore.pluginManeger("paper");
-    else if (options.platform === "Spigot") plugin = new bdsCore.pluginManeger("spigot");
-    else if (options.platform === "PocketmineMP") plugin = new bdsCore.pluginManeger("pocketmine");
-    else if (options.platform === "Powernukkit") plugin = new bdsCore.pluginManeger("powernukkit");
-    else throw new Error("Platform not support");
-    await plugin.loadPlugins();
-    for (const pluginName of options.plugin) await plugin.installPlugin(String(pluginName));
-  }).command({command: "*", handler: () => {yargs.showHelp();}});
 }).command({command: "*", handler: () => {Yargs.showHelp();}});
 Yargs.parseAsync();

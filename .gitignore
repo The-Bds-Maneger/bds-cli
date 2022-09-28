@@ -3,5 +3,5 @@ dist/
 /BdsManegerCLI_*
 /*.log
 src/**/*.d.ts
-src/**/*.d.js
+src/**/*.js
 *backup_*.zip
