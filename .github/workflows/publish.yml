@@ -19,7 +19,7 @@ jobs:
         submodules: true
 
     # Install basic tools
-    - uses: actions/setup-node@v3.5.0
+    - uses: actions/setup-node@v3.5.1
       name: Setup node.js
       with:
         node-version: 18.x
